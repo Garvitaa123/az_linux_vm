@@ -1,0 +1,4 @@
+subscription_id     = "00000000-0000-0000-0000-000000000000"
+prefix              = "demo"
+location            = "centralindia"
+allowed_source_cidr = "*" # change to "YOUR.PUBLIC.IP/32" for SSH safety
