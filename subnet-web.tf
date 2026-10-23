@@ -34,19 +34,6 @@ resource "azurerm_network_security_group" "web" {
     source_address_prefix      = var.allowed_source_cidr
     destination_address_prefix = "*"
   }
-
-  # SSH from Bastion subnet
-  security_rule {
-    name                       = "Allow-SSH-From-Bastion"
-    priority                   = 120
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefixes    = var.bastion_subnet_prefix
-    destination_address_prefix = "*"
-  }
 }
 
 resource "azurerm_subnet_network_security_group_association" "web" {
@@ -77,7 +64,7 @@ resource "azurerm_network_interface" "web_vm" {
   }
 }
 
-# VM NSG (Optional in the diagram) attached directly to the NIC
+# VM NSG optional
 resource "azurerm_network_security_group" "vm" {
   name                = "${var.prefix}-web-vm-nsg"
   location            = azurerm_resource_group.rg.location
@@ -105,18 +92,6 @@ resource "azurerm_network_security_group" "vm" {
     source_port_range          = "*"
     destination_port_range     = "22"
     source_address_prefix      = var.allowed_source_cidr
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow-SSH-From-Bastion"
-    priority                   = 120
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefixes    = var.bastion_subnet_prefix
     destination_address_prefix = "*"
   }
 }
@@ -155,36 +130,3 @@ resource "azurerm_linux_virtual_machine" "web_vm" {
     sku       = "server"
     version   = "latest"
   }
-
-  # Installs nginx so port 80 returns a page
-  custom_data = base64encode(<<-CLOUDINIT
-    #cloud-config
-    package_update: true
-    packages:
-      - nginx
-    runcmd:
-      - systemctl enable nginx
-      - systemctl start nginx
-      - echo "<h1>Hello from $(hostname) - Web Tier</h1>" > /var/www/html/index.html
-  CLOUDINIT
-  )
-}
-
-# Extra managed data disk (the "Disk" icon in the diagram)
-resource "azurerm_managed_disk" "web_vm_data" {
-  name                 = "${var.prefix}-web-vm-datadisk"
-  location             = azurerm_resource_group.rg.location
-  resource_group_name  = azurerm_resource_group.rg.name
-  storage_account_type = "Standard_LRS"
-  create_option        = "Empty"
-  zone                 = var.availability_zone
-  disk_size_gb         = var.data_disk_size_gb
-  tags                 = var.tags
-}
-
-resource "azurerm_virtual_machine_data_disk_attachment" "web_vm_data" {
-  managed_disk_id    = azurerm_managed_disk.web_vm_data.id
-  virtual_machine_id = azurerm_linux_virtual_machine.web_vm.id
-  lun                = 0
-  caching            = "ReadWrite"
-}
