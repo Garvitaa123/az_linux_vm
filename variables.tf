@@ -35,7 +35,7 @@ variable "db_subnet_prefix" {
   default = ["10.0.3.0/24"]
 }
 
-# Azure requires the Bastion subnet to be named "AzureBastionSubnet" and be /26 or larger
+
 variable "bastion_subnet_prefix" {
   type    = list(string)
   default = ["10.0.4.0/26"]
