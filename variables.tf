@@ -58,11 +58,6 @@ variable "admin_username" {
   default = "azureuser"
 }
 
-variable "data_disk_size_gb" {
-  type    = number
-  default = 32
-}
-
 variable "allowed_source_cidr" {
   description = "Source allowed to reach the Web VM on ports 80/22. Restrict SSH to your own IP (x.x.x.x/32) in real use."
   type        = string
