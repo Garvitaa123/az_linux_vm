@@ -46,7 +46,7 @@ variable "vm_size" {
   default = "Standard_B2ats_v2"
 }
 
-# Zones 1 and 3 are restricted for this subscription in Central India; zone 2 is open.
+
 variable "availability_zone" {
   description = "Availability zone for the VM and its data disk (must match)"
   type        = string
